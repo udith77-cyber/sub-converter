@@ -38,7 +38,9 @@ python3 -m http.server 8080
 3. 打开仓库 **Settings → Pages**：
    - Source 选择 **Deploy from a branch**
    - Branch 选择 **main**，目录 **/ (root)**，保存
-4. 等 1–2 分钟，访问 `https://udith77-cyber.github.io/sub-converter/` 即可使用
+4. 等 1–2 分钟，访问
+5. `https://udith77-cyber.github.io/sub-converter/`
+7. 即可使用
 
 ## 关于后端
 
