@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>订阅转换 · Sub Converter</title>
+<style>
+  :root{
+    --bg:#0f1420; --card:#182030; --card2:#1e2940; --line:#2a3a55;
+    --text:#e8eef7; --muted:#93a1b8; --accent:#4f8cff; --accent2:#37c871; --danger:#ff5d6c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.6}
+  header{padding:28px 20px 10px;max-width:960px;margin:0 auto}
+  header h1{margin:0;font-size:24px}
+  header h1 small{color:var(--muted);font-weight:400;font-size:14px;margin-left:8px}
+  header p{color:var(--muted);font-size:14px;margin:6px 0 0}
+  main{max-width:960px;margin:0 auto;padding:10px 20px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:18px;margin:16px 0}
+  .card h2{margin:0 0 12px;font-size:16px}
+  .card h2 .step{display:inline-block;background:var(--accent);color:#fff;font-size:12px;
+    width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;margin-right:8px}
+  label.lbl{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
+  textarea,input[type=text],select{
+    width:100%;background:#0d1220;border:1px solid var(--line);color:var(--text);
+    border-radius:8px;padding:10px 12px;font-size:14px;outline:none}
+  textarea:focus,input:focus,select:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:84px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:640px){.row{grid-template-columns:1fr}}
+  .opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px}
+  .opt{display:flex;align-items:center;gap:8px;background:#0d1220;border:1px solid var(--line);
+    border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;user-select:none}
+  .opt input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+  .opt small{color:var(--muted)}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  button{border:none;border-radius:8px;padding:10px 18px;font-size:14px;cursor:pointer;
+    background:var(--accent);color:#fff;font-weight:600}
+  button:hover{filter:brightness(1.12)}
+  button.ghost{background:var(--card2);color:var(--text);border:1px solid var(--line);font-weight:400}
+  button.green{background:var(--accent2)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .linkbox{background:#0d1220;border:1px dashed var(--line);border-radius:8px;padding:10px 12px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;word-break:break-all;
+    color:#9fd0ff;max-height:120px;overflow:auto;margin-top:12px}
+  .status{font-size:13px;color:var(--muted);margin-top:10px}
+  .status.ok{color:var(--accent2)} .status.err{color:var(--danger)}
+  pre.code{background:#0b0f1a;border:1px solid var(--line);border-radius:8px;padding:14px;
+    font-size:12px;max-height:420px;overflow:auto;white-space:pre-wrap;word-break:break-all;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  .nodelist{font-size:13px;color:var(--muted);margin:8px 0}
+  .nodelist b{color:var(--text)}
+  details.help{font-size:13px;color:var(--muted)}
+  details.help summary{cursor:pointer;color:var(--text);font-size:14px;margin:6px 0}
+  details.help li{margin:6px 0}
+  code.inline{background:#0d1220;border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:12px}
+  .hist-item{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    background:#0d1220;border:1px solid var(--line);border-radius:8px;padding:8px 12px;
+    margin:8px 0;font-size:12px}
+  .hist-item .u{color:#9fd0ff;word-break:break-all;flex:1;font-family:ui-monospace,Menlo,monospace}
+  .hist-item .t{color:var(--muted);white-space:nowrap}
+  .hist-item button{padding:6px 12px;font-size:12px}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+  footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <h1>订阅转换 <small>Sub Converter</small></h1>
+  <p>把机场 / 自建订阅链接转换成 Clash、Sing-box、Surge 等客户端配置。纯静态页面，可部署到 GitHub Pages。</p>
+</header>
+<main>
+
+  <div class="card">
+    <h2><span class="step">1</span>填写订阅链接</h2>
+    <label class="lbl" for="sub">订阅 URL（每行一个，支持多个，将自动合并）</label>
+    <textarea id="sub" placeholder="https://example.com/api/v1/client/subscribe?token=xxx"></textarea>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">2</span>转换设置</h2>
+    <div class="row">
+      <div>
+        <label class="lbl" for="backend">转换后端（subconverter 服务）</label>
+        <select id="backend">
+          <option value="https://api.v1.mk">api.v1.mk（公共）</option>
+          <option value="custom">自定义…</option>
+        </select>
+        <input type="text" id="backendCustom" placeholder="https://你的-subconverter/sub"
+               style="margin-top:8px;display:none">
+      </div>
+      <div>
+        <label class="lbl" for="target">目标客户端</label>
+        <select id="target">
+          <option value="clash" selected>Clash / Clash Meta</option>
+          <option value="clashr">ClashR</option>
+          <option value="singbox">Sing-box</option>
+          <option value="surge">Surge</option>
+          <option value="surfboard">Surfboard</option>
+          <option value="quanx">Quantumult X</option>
+          <option value="loon">Loon</option>
+          <option value="v2ray">V2Ray</option>
+          <option value="trojan">Trojan</option>
+          <option value="mixed">Mixed（混合订阅）</option>
+          <option value="sssub">SSSub</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label class="lbl" for="configPreset">分流规则</label>
+        <select id="configPreset">
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_NoAuto.ini" selected>ACL4SSR 完整版 · 无自动测速</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full.ini">ACL4SSR 完整版</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_Group.ini">ACL4SSR 完整版 · 分组</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini.ini">ACL4SSR 精简版</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_NoAuto.ini">ACL4SSR 精简版 · 无自动测速</option>
+          <option value="custom">自定义 URL…</option>
+          <option value="">不使用（后端默认）</option>
+        </select>
+        <input type="text" id="configCustom" placeholder="https://…/xxx.ini"
+               style="margin-top:8px;display:none">
+      </div>
+      <div>
+        <label class="lbl" for="diyua">自定义 UA（diyua，可空）</label>
+        <input type="text" id="diyua" value="ShadowRocket" placeholder="clash">
+        <label class="lbl" for="insertUrl">insert_url（追加订阅，可空）</label>
+        <input type="text" id="insertUrl" placeholder="https://…">
+      </div>
+    </div>
+    <label class="lbl">转换选项</label>
+    <div class="opts" id="opts"></div>
+    <div class="btns">
+      <button class="ghost" id="btnDefault">恢复默认配置</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">3</span>生成并获取配置</h2>
+    <div class="btns">
+      <button id="btnGen">生成转换链接</button>
+      <button class="green" id="btnFetch" disabled>一键获取并预览</button>
+      <button class="ghost" id="btnOpen" disabled>新标签页打开</button>
+    </div>
+    <div class="linkbox" id="linkOut" style="display:none"></div>
+    <div class="btns" id="linkBtns" style="display:none">
+      <button class="ghost" id="btnCopyLink">复制链接</button>
+    </div>
+    <div class="status" id="genStatus"></div>
+  </div>
+
+  <div class="card" id="previewCard" style="display:none">
+    <h2><span class="step">4</span>配置预览</h2>
+    <div class="status" id="fetchStatus"></div>
+    <div class="nodelist" id="nodeList"></div>
+    <pre class="code" id="preview"></pre>
+    <div class="btns">
+      <button class="green" id="btnDownload">下载配置文件</button>
+      <button class="ghost" id="btnCopyCfg">复制配置内容</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>历史记录</h2>
+    <div id="history"><div class="status">暂无历史，生成的链接会自动保存在本机浏览器中。</div></div>
+    <div class="btns"><button class="ghost" id="btnClearHist">清空历史</button></div>
+  </div>
+
+  <div class="card">
+    <details class="help" open>
+      <summary>使用说明与注意事项</summary>
+      <ul>
+        <li>转换由后端 subconverter 服务完成，本页面只负责拼装参数并发起请求。</li>
+        <li>「一键获取并预览」依赖浏览器直接请求后端接口；若后端未返回跨域头（CORS）或服务波动，会失败——此时请用「新标签页打开」，在浏览器地址栏直接访问转换链接即可看到 / 下载配置。</li>
+        <li>默认后端 <code class="inline">api.v1.mk</code> 为第三方公共服务，偶发 502；如频繁失败，可自建 subconverter（见 README）后填入「自定义」后端。</li>
+        <li>订阅链接包含你的个人 token，请勿把生成的转换链接随意分享。</li>
+        <li>历史记录仅保存在本机浏览器 localStorage，不会上传。</li>
+      </ul>
+    </details>
+  </div>
+
+</main>
+<footer>
+  Sub Converter · 静态页面 · 后端基于 <a href="https://github.com/tindy2013/subconverter" target="_blank" rel="noopener">subconverter</a>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var $ = function(id){ return document.getElementById(id); };
+
+/* ---------- 选项定义 ---------- */
+var OPTS = [
+  ["emoji",    "Emoji",      "节点名添加 Emoji", true],
+  ["udp",      "UDP",        "启用 UDP",         true],
+  ["xudp",     "XUDP",       "启用 XUDP",        true],
+  ["tls13",    "TLS1.3",     "启用 TLS1.3",      true],
+  ["expand",   "展开规则",   "expand rules",     true],
+  ["new_name", "重命名节点", "new_name",         true],
+  ["clash.doh","Clash DoH",  "clash.doh",        true],
+  ["tfo",      "TCP Fast Open","tfo",            false],
+  ["scv",      "跳过证书验证","scv",              false],
+  ["fdn",      "过滤节点",   "fdn",              false],
+  ["insert",   "追加订阅",   "insert",           false],
+  ["list",     "输出列表",   "list",             false],
+  ["sort",     "节点排序",   "sort",             false]
+];
+var optBox = $("opts");
+OPTS.forEach(function(o){
+  var label = document.createElement("label");
+  label.className = "opt";
+  var cb = document.createElement("input");
+  cb.type = "checkbox"; cb.id = "opt_" + o[0]; cb.checked = o[3];
+  var sp = document.createElement("span");
+  sp.innerHTML = "<b>" + o[1] + "</b> <small>" + o[2] + "</small>";
+  label.appendChild(cb); label.appendChild(sp);
+  optBox.appendChild(label);
+});
+function getOpt(name){ return $("opt_" + name).checked; }
+function setOpt(name, v){ $("opt_" + name).checked = !!v; }
+
+/* ---------- 后端 / 规则 自定义切换 ---------- */
+$("backend").addEventListener("change", function(){
+  $("backendCustom").style.display = this.value === "custom" ? "" : "none";
+});
+$("configPreset").addEventListener("change", function(){
+  $("configCustom").style.display = this.value === "custom" ? "" : "none";
+});
+
+/* ---------- 默认配置（与你之前的链接一致） ---------- */
+function loadDefaults(){
+  $("backend").value = "https://api.v1.mk";
+  $("backendCustom").style.display = "none"; $("backendCustom").value = "";
+  $("target").value = "clash";
+  $("configPreset").value = "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_NoAuto.ini";
+  $("configCustom").style.display = "none"; $("configCustom").value = "";
+  $("diyua").value = "ShadowRocket";
+  $("insertUrl").value = "";
+  OPTS.forEach(function(o){ setOpt(o[0], o[3]); });
+}
+$("btnDefault").addEventListener("click", loadDefaults);
+loadDefaults();
+
+/* ---------- 拼装转换链接 ---------- */
+var lastUrl = "", lastText = "", lastTarget = "clash";
+function getBackend(){
+  var v = $("backend").value;
+  if (v === "custom") v = $("backendCustom").value.trim().replace(/\/+$/, "");
+  return v;
+}
+function buildUrl(){
+  var subs = $("sub").value.split("\n").map(function(s){ return s.trim(); })
+    .filter(function(s){ return /^https?:\/\//i.test(s); });
+  if (!subs.length) return { error: "请先填写至少一个订阅链接（需以 http:// 或 https:// 开头）。" };
+  var backend = getBackend();
+  if (!backend) return { error: "请填写自定义后端地址。" };
+  var cfg = $("configPreset").value;
+  if (cfg === "custom") cfg = $("configCustom").value.trim();
+  var p = [];
+  p.push(["target", $("target").value]);
+  p.push(["url", subs.join("|")]);
+  p.push(["insert", getOpt("insert") ? "true" : "false"]);
+  if (cfg) p.push(["config", cfg]);
+  OPTS.forEach(function(o){
+    if (o[0] === "insert") return;
+    p.push([o[0], getOpt(o[0]) ? "true" : "false"]);
+  });
+  var diy = $("diyua").value.trim();
+  if (diy) p.push(["diyua", diy]);
+  var iu = $("insertUrl").value.trim();
+  if (iu && getOpt("insert")) p.push(["insert_url", iu]);
+  var q = p.map(function(kv){
+    return encodeURIComponent(kv[0]) + "=" + encodeURIComponent(kv[1]);
+  }).join("&");
+  return { url: backend + "/sub?" + q, target: $("target").value };
+}
+
+/* ---------- 历史记录 ---------- */
+function readHist(){
+  try { return JSON.parse(localStorage.getItem("subconv_history") || "[]"); }
+  catch(e){ return []; }
+}
+function writeHist(h){
+  try { localStorage.setItem("subconv_history", JSON.stringify(h.slice(0, 30))); }
+  catch(e){}
+}
+function renderHist(){
+  var h = readHist(), box = $("history");
+  if (!h.length){ box.innerHTML = '<div class="status">暂无历史，生成的链接会自动保存在本机浏览器中。</div>'; return; }
+  box.innerHTML = "";
+  h.forEach(function(item){
+    var div = document.createElement("div");
+    div.className = "hist-item";
+    var d = new Date(item.time);
+    var tstr = d.toLocaleString("zh-CN", {hour12:false});
+    div.innerHTML = '<span class="u"></span><span class="t">' + tstr + " · " + item.target + '</span>';
+    div.querySelector(".u").textContent = item.url.length > 120 ? item.url.slice(0,120) + "…" : item.url;
+    var b = document.createElement("button");
+    b.className = "ghost"; b.textContent = "载入";
+    b.addEventListener("click", function(){
+      lastUrl = item.url; lastTarget = item.target;
+      showLink(item.url);
+      $("genStatus").textContent = "已从历史记录载入，可直接获取或打开。";
+      $("genStatus").className = "status ok";
+    });
+    div.appendChild(b);
+    box.appendChild(div);
+  });
+}
+$("btnClearHist").addEventListener("click", function(){ writeHist([]); renderHist(); });
+renderHist();
+function pushHist(url, target){
+  var h = readHist().filter(function(i){ return i.url !== url; });
+  h.unshift({url:url, target:target, time:Date.now()});
+  writeHist(h); renderHist();
+}
+
+/* ---------- 生成链接 ---------- */
+function showLink(url){
+  lastUrl = url;
+  $("linkOut").style.display = "";
+  $("linkOut").textContent = url;
+  $("linkBtns").style.display = "";
+  $("btnFetch").disabled = false;
+  $("btnOpen").disabled = false;
+}
+$("btnGen").addEventListener("click", function(){
+  var r = buildUrl();
+  if (r.error){
+    $("genStatus").textContent = r.error;
+    $("genStatus").className = "status err";
+    return;
+  }
+  lastTarget = r.target;
+  showLink(r.url);
+  pushHist(r.url, r.target);
+  $("genStatus").textContent = "转换链接已生成（" + r.url.length + " 字符）。";
+  $("genStatus").className = "status ok";
+});
+$("btnOpen").addEventListener("click", function(){
+  if (lastUrl) window.open(lastUrl, "_blank", "noopener");
+});
+function copyText(t, okMsg){
+  function done(ok){
+    $("genStatus").textContent = ok ? okMsg : "复制失败，请手动选择复制。";
+    $("genStatus").className = "status " + (ok ? "ok" : "err");
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){ done(true); }, function(){ done(false); });
+  } else {
+    var ta = document.createElement("textarea");
+    ta.value = t; document.body.appendChild(ta); ta.select();
+    try { done(document.execCommand("copy")); } catch(e){ done(false); }
+    document.body.removeChild(ta);
+  }
+}
+$("btnCopyLink").addEventListener("click", function(){
+  if (lastUrl) copyText(lastUrl, "转换链接已复制。");
+});
+
+/* ---------- 一键获取并预览 ---------- */
+function parseNodeNames(text){
+  var names = [], re = /^\s*-\s*(?:\{\s*)?name:\s*"?([^",}\n]+)"?/gm, m;
+  while ((m = re.exec(text)) !== null){
+    var n = m[1].trim();
+    if (n) names.push(n);
+    if (names.length >= 200) break;
+  }
+  return names;
+}
+function extFor(target){
+  return (target === "clash" || target === "clashr") ? "yaml" : "txt";
+}
+$("btnFetch").addEventListener("click", function(){
+  if (!lastUrl) return;
+  var st = $("fetchStatus"), pv = $("preview"), nl = $("nodeList");
+  $("previewCard").style.display = "";
+  st.className = "status"; st.textContent = "正在请求转换后端，请稍候…";
+  pv.textContent = ""; nl.innerHTML = "";
+  var ctrl = new AbortController();
+  var timer = setTimeout(function(){ ctrl.abort(); }, 30000);
+  var t0 = Date.now();
+  fetch(lastUrl, {signal: ctrl.signal})
+    .then(function(resp){
+      clearTimeout(timer);
+      var ms = ((Date.now() - t0)/1000).toFixed(1);
+      return resp.text().then(function(text){
+        if (!resp.ok){
+          var hint = text.length > 200 ? text.slice(0,200) + "…" : text;
+          throw new Error("后端返回 HTTP " + resp.status + "：" + (hint || "无返回内容"));
+        }
+        if (/no nodes were found/i.test(text))
+          throw new Error("后端提示 No nodes were found：订阅链接无效、已过期或没有可用节点。");
+        lastText = text;
+        st.className = "status ok";
+        st.textContent = "获取成功 · HTTP 200 · 耗时 " + ms + "s · " + text.length + " 字符";
+        var names = parseNodeNames(text);
+        if (names.length){
+          nl.innerHTML = "共解析到 <b>" + names.length + "</b> 个节点：" +
+            names.slice(0, 12).map(function(n){
+              return "<code class='inline'></code>";
+            }).join(" ") + (names.length > 12 ? " …" : "");
+          var codes = nl.querySelectorAll("code");
+          names.slice(0, 12).forEach(function(n, i){ codes[i].textContent = n; });
+        } else {
+          nl.textContent = "未解析到节点名称（可能目标格式不是 Clash YAML）。";
+        }
+        pv.textContent = text.length > 60000 ? text.slice(0,60000) + "\n…（内容过长，已截断，下载查看完整版）" : text;
+      });
+    })
+    .catch(function(err){
+      clearTimeout(timer);
+      st.className = "status err";
+      if (err.name === "AbortError"){
+        st.textContent = "请求超时（30s）。后端可能波动，稍后重试，或换一个后端地址。";
+      } else if (err instanceof TypeError){
+        st.textContent = "浏览器跨域限制 / 网络不通，无法直接读取。请用「新标签页打开」在地址栏直接访问转换链接。";
+      } else {
+        st.textContent = "获取失败：" + err.message;
+      }
+    });
+});
+
+/* ---------- 下载 / 复制配置 ---------- */
+$("btnDownload").addEventListener("click", function(){
+  if (!lastText) return;
+  var blob = new Blob([lastText], {type:"text/plain;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "config-" + lastTarget + "." + extFor(lastTarget);
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+});
+$("btnCopyCfg").addEventListener("click", function(){
+  if (lastText) copyText(lastText, "配置内容已复制（" + lastText.length + " 字符）。");
+});
+})();
+</script>
+</body>
+</html>
