@@ -1,54 +1,75 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="glacier">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>订阅转换 · Sub Converter</title>
 <style>
   :root{
-    --bg:#0f1420; --card:#182030; --card2:#1e2940; --line:#2a3a55;
+    --bg:#eaf5fe; --bg2:#d7ebfb;
+    --card:#ffffff; --card2:#f2f9ff; --line:#c4dff2; --input:#f7fcff;
+    --text:#17334d; --muted:#5f8199; --accent:#2fa3e3; --accent2:#1fa97f; --danger:#e5484d;
+    --link:#1473b8;
+    --r-lg:22px; --r-md:14px; --r-pill:999px;
+    --shadow:0 10px 28px rgba(47,163,227,.14);
+  }
+  [data-theme="dark"]{
+    --bg:#0f1420; --bg2:#0f1420;
+    --card:#182030; --card2:#1e2940; --line:#2a3a55; --input:#0d1220;
     --text:#e8eef7; --muted:#93a1b8; --accent:#4f8cff; --accent2:#37c871; --danger:#ff5d6c;
+    --link:#9fd0ff;
+    --shadow:none;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);
+  body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
-    line-height:1.6}
+    line-height:1.6;min-height:100vh;transition:background .35s ease,color .35s ease}
   header{padding:28px 20px 10px;max-width:960px;margin:0 auto}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
   header h1{margin:0;font-size:24px}
   header h1 small{color:var(--muted);font-weight:400;font-size:14px;margin-left:8px}
   header p{color:var(--muted);font-size:14px;margin:6px 0 0}
   main{max-width:960px;margin:0 auto;padding:10px 20px 60px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
-    padding:18px;margin:16px 0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+    padding:18px;margin:16px 0;box-shadow:var(--shadow);
+    transition:box-shadow .3s ease,transform .3s ease}
   .card h2{margin:0 0 12px;font-size:16px}
   .card h2 .step{display:inline-block;background:var(--accent);color:#fff;font-size:12px;
     width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;margin-right:8px}
   label.lbl{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
   textarea,input[type=text],select{
-    width:100%;background:#0d1220;border:1px solid var(--line);color:var(--text);
-    border-radius:8px;padding:10px 12px;font-size:14px;outline:none}
-  textarea:focus,input:focus,select:focus{border-color:var(--accent)}
+    width:100%;background:var(--input);border:1px solid var(--line);color:var(--text);
+    border-radius:var(--r-md);padding:10px 12px;font-size:14px;outline:none;
+    transition:border-color .2s ease,box-shadow .2s ease}
+  textarea:focus,input:focus,select:focus{border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(47,163,227,.22)}
   textarea{resize:vertical;min-height:84px;font-family:ui-monospace,Menlo,Consolas,monospace}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   @media(max-width:640px){.row{grid-template-columns:1fr}}
   .opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px}
-  .opt{display:flex;align-items:center;gap:8px;background:#0d1220;border:1px solid var(--line);
-    border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;user-select:none}
-  .opt input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+  .opt{display:flex;align-items:center;gap:8px;background:var(--input);border:1px solid var(--line);
+    border-radius:var(--r-md);padding:8px 10px;font-size:13px;cursor:pointer;user-select:none;
+    transition:border-color .2s ease,background .2s ease,transform .15s ease}
+  .opt:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .opt:has(input:checked){border-color:var(--accent);background:rgba(47,163,227,.10)}
+  .opt input{accent-color:var(--accent);width:15px;height:15px;margin:0;cursor:pointer}
   .opt small{color:var(--muted)}
   .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
-  button{border:none;border-radius:8px;padding:10px 18px;font-size:14px;cursor:pointer;
-    background:var(--accent);color:#fff;font-weight:600}
-  button:hover{filter:brightness(1.12)}
+  button{border:none;border-radius:var(--r-pill);padding:10px 18px;font-size:14px;cursor:pointer;
+    background:var(--accent);color:#fff;font-weight:600;
+    transition:filter .2s ease,transform .15s ease,box-shadow .2s ease}
+  button:hover{filter:brightness(1.08);transform:translateY(-1px);
+    box-shadow:0 6px 16px rgba(47,163,227,.28)}
+  button:active{transform:scale(.97)}
   button.ghost{background:var(--card2);color:var(--text);border:1px solid var(--line);font-weight:400}
   button.green{background:var(--accent2)}
   button:disabled{opacity:.45;cursor:not-allowed}
-  .linkbox{background:#0d1220;border:1px dashed var(--line);border-radius:8px;padding:10px 12px;
+  .linkbox{background:var(--input);border:1px dashed var(--line);border-radius:var(--r-md);padding:10px 12px;
     font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;word-break:break-all;
-    color:#9fd0ff;max-height:120px;overflow:auto;margin-top:12px}
+    color:var(--link);max-height:120px;overflow:auto;margin-top:12px}
   .status{font-size:13px;color:var(--muted);margin-top:10px}
   .status.ok{color:var(--accent2)} .status.err{color:var(--danger)}
-  pre.code{background:#0b0f1a;border:1px solid var(--line);border-radius:8px;padding:14px;
+  pre.code{background:var(--input);border:1px solid var(--line);border-radius:var(--r-md);padding:14px;
     font-size:12px;max-height:420px;overflow:auto;white-space:pre-wrap;word-break:break-all;
     font-family:ui-monospace,Menlo,Consolas,monospace}
   .nodelist{font-size:13px;color:var(--muted);margin:8px 0}
@@ -56,11 +77,11 @@
   details.help{font-size:13px;color:var(--muted)}
   details.help summary{cursor:pointer;color:var(--text);font-size:14px;margin:6px 0}
   details.help li{margin:6px 0}
-  code.inline{background:#0d1220;border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:12px}
+  code.inline{background:var(--input);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12px}
   .hist-item{display:flex;justify-content:space-between;align-items:center;gap:10px;
-    background:#0d1220;border:1px solid var(--line);border-radius:8px;padding:8px 12px;
+    background:var(--input);border:1px solid var(--line);border-radius:var(--r-md);padding:8px 12px;
     margin:8px 0;font-size:12px}
-  .hist-item .u{color:#9fd0ff;word-break:break-all;flex:1;font-family:ui-monospace,Menlo,monospace}
+  .hist-item .u{color:var(--link);word-break:break-all;flex:1;font-family:ui-monospace,Menlo,monospace}
   .hist-item .t{color:var(--muted);white-space:nowrap}
   .hist-item button{padding:6px 12px;font-size:12px}
   footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
@@ -69,7 +90,10 @@
 </head>
 <body>
 <header>
-  <h1>订阅转换 <small>Sub Converter</small></h1>
+  <div class="topbar">
+    <h1>订阅转换 <small>Sub Converter</small></h1>
+    <button class="ghost" id="btnTheme" title="切换主题">🌙 深色</button>
+  </div>
   <p>把机场 / 自建订阅链接转换成 Clash、Sing-box、Surge 等客户端配置。纯静态页面，可部署到 GitHub Pages。</p>
 </header>
 <main>
@@ -113,11 +137,39 @@
       <div>
         <label class="lbl" for="configPreset">分流规则</label>
         <select id="configPreset">
-          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_NoAuto.ini" selected>ACL4SSR 完整版 · 无自动测速</option>
-          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full.ini">ACL4SSR 完整版</option>
-          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_Group.ini">ACL4SSR 完整版 · 分组</option>
-          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini.ini">ACL4SSR 精简版</option>
-          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_NoAuto.ini">ACL4SSR 精简版 · 无自动测速</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR.ini">ACL4SSR</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_AdblockPlus.ini">ACL4SSR_AdblockPlus</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_BackCN.ini">ACL4SSR_BackCN</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Mini.ini">ACL4SSR_Mini</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Mini_Fallback.ini">ACL4SSR_Mini_Fallback</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Mini_MultiMode.ini">ACL4SSR_Mini_MultiMode</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Mini_NoAuto.ini">ACL4SSR_Mini_NoAuto</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_NoApple.ini">ACL4SSR_NoApple</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_NoAuto.ini">ACL4SSR_NoAuto</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_NoAuto_NoApple.ini">ACL4SSR_NoAuto_NoApple</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_NoAuto_NoApple_NoMicrosoft.ini">ACL4SSR_NoAuto_NoApple_NoMicrosoft</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_NoMicrosoft.ini">ACL4SSR_NoMicrosoft</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online.ini">ACL4SSR_Online</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_AdblockPlus.ini">ACL4SSR_Online_AdblockPlus</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Full.ini">ACL4SSR_Online_Full</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Full_AdblockPlus.ini">ACL4SSR_Online_Full_AdblockPlus</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Full_Google.ini">ACL4SSR_Online_Full_Google</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Full_MultiMode.ini">ACL4SSR_Online_Full_MultiMode</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Full_Netflix.ini">ACL4SSR_Online_Full_Netflix</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Full_NoAuto.ini">ACL4SSR_Online_Full_NoAuto</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Mini.ini">ACL4SSR_Online_Mini</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Mini_AdblockPlus.ini">ACL4SSR_Online_Mini_AdblockPlus</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Mini_Ai.ini">ACL4SSR_Online_Mini_Ai</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Mini_Fallback.ini">ACL4SSR_Online_Mini_Fallback</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Mini_MultiCountry.ini">ACL4SSR_Online_Mini_MultiCountry</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Mini_MultiMode.ini" selected>ACL4SSR_Online_Mini_MultiMode</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Mini_NoAuto.ini">ACL4SSR_Online_Mini_NoAuto</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_MultiCountry.ini">ACL4SSR_Online_MultiCountry</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_NoAuto.ini">ACL4SSR_Online_NoAuto</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_NoReject.ini">ACL4SSR_Online_NoReject</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_WithChinaIp.ini">ACL4SSR_WithChinaIp</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_WithChinaIp_WithGFW.ini">ACL4SSR_WithChinaIp_WithGFW</option>
+          <option value="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_WithGFW.ini">ACL4SSR_WithGFW</option>
           <option value="custom">自定义 URL…</option>
           <option value="">不使用（后端默认）</option>
         </select>
@@ -192,6 +244,22 @@
 "use strict";
 var $ = function(id){ return document.getElementById(id); };
 
+/* ---------- 主题（冰川蓝 / 深色），选择保存在本机 ---------- */
+(function initTheme(){
+  var btn = $("btnTheme");
+  function apply(t){
+    document.documentElement.setAttribute("data-theme", t);
+    btn.textContent = t === "glacier" ? "🌙 深色" : "☀️ 冰川蓝";
+    try { localStorage.setItem("subconv_theme", t); } catch(e){}
+  }
+  var saved = "glacier";
+  try { saved = localStorage.getItem("subconv_theme") || "glacier"; } catch(e){}
+  apply(saved);
+  btn.addEventListener("click", function(){
+    apply(document.documentElement.getAttribute("data-theme") === "glacier" ? "dark" : "glacier");
+  });
+})();
+
 /* ---------- 选项定义 ---------- */
 var OPTS = [
   ["emoji",    "Emoji",      "节点名添加 Emoji", true],
@@ -235,7 +303,7 @@ function loadDefaults(){
   $("backend").value = "https://api.v1.mk";
   $("backendCustom").style.display = "none"; $("backendCustom").value = "";
   $("target").value = "clash";
-  $("configPreset").value = "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_NoAuto.ini";
+  $("configPreset").value = "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Mini_MultiMode.ini";
   $("configCustom").style.display = "none"; $("configCustom").value = "";
   $("diyua").value = "ShadowRocket";
   $("insertUrl").value = "";
